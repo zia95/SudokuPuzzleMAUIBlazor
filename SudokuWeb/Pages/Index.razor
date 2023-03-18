@@ -1,0 +1,74 @@
+﻿@page "/"
+@inject SudokuService ss
+
+<PageTitle>Index</PageTitle>
+
+
+<SudokuBoard @ref=_sboard />
+
+
+
+
+<!-- List  -->
+<h5> Puzzles List</h5>
+<input type="button" value="Generate" @onclick="()=>generate_and_load_puzzles()" />
+
+@if (_puzzles.Count > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Puzzle</th>
+                <th>Difficulty</th>
+                <th>[]</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < _puzzles.Count; i++)
+            {
+                int j = i;
+                <tr>
+                    <td>@i</td>
+                    <td>@_puzzles[i].ToString()</td>
+                    <td>@_puzzles[i].DifficultyString</td>
+                    <td><input type="button" value="Play" @onclick="()=>load_puzzle(j)" /></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+
+
+
+@code
+{
+    SudokuBoard? _sboard;
+    List<SudokuPuzzle> _puzzles = new();
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+
+            await generate_and_load_puzzles();
+            this.StateHasChanged();
+            load_puzzle(0);
+
+        }
+    }
+
+    async Task generate_and_load_puzzles()
+    {
+        var puz = await ss.GenerateAsync(10);
+
+        _puzzles.AddRange(puz);
+
+        
+    }
+
+    void load_puzzle(int idx) => _sboard!.LoadPuzzle(_puzzles[idx]);
+}

@@ -1,0 +1,190 @@
+﻿
+<div class="card text-white bg-primary mb-3" style="width: 80%;">
+    <div class="card-header">Sudoku</div>
+    <div class="card-body">
+
+        
+        @if(Puzzle != null)
+        {
+            <h6 class="card-title">Difficulty:@Puzzle.DifficultyString, SelectedNumber:@_selected_number</h6>
+            <p class="card-text">@_msg</p>
+
+            <table>
+                <tbody>
+
+                    @for(int i = 0; i < 3; i++)
+                    {
+                        <tr>
+                            @for (int j = 1 + (3 * i); j < (4 + (3 * i)); j++)
+                            {
+                                var blk = Puzzle.GetPuzzleBlock(j).ToArray();
+
+                                
+                                <td style="height: 10rem; width: 10rem;font-size:xx-large; border:.2rem solid blue;">
+                                    <table style="width:100%" unselectable="on">
+                                        <tbody>
+                                            <tr>
+
+                                                <td @onclick="()=>grid_cell_clicked(blk[0])" style="border:.1rem solid black; text-align:center; @grid_cell_style(blk[0])">@puzz_format_num(blk[0])</td>
+                                                <td @onclick="()=>grid_cell_clicked(blk[1])" style="border:.1rem solid black; text-align:center; @grid_cell_style(blk[1])">@puzz_format_num(blk[1])</td>
+                                                <td @onclick="()=>grid_cell_clicked(blk[2])" style="border:.1rem solid black; text-align:center; @grid_cell_style(blk[2])">@puzz_format_num(blk[2])</td>
+                                            </tr>
+                                            <tr>
+                                                <td @onclick="()=>grid_cell_clicked(blk[3])" style="border:.1rem solid black; text-align:center; @grid_cell_style(blk[3])">@puzz_format_num(blk[3])</td>
+                                                <td @onclick="()=>grid_cell_clicked(blk[4])" style="border:.1rem solid black; text-align:center; @grid_cell_style(blk[4])">@puzz_format_num(blk[4])</td>
+                                                <td @onclick="()=>grid_cell_clicked(blk[5])" style="border:.1rem solid black; text-align:center; @grid_cell_style(blk[5])">@puzz_format_num(blk[5])</td>
+                                            </tr>
+                                            <tr>
+                                                <td @onclick="()=>grid_cell_clicked(blk[6])" style="border:.1rem solid black; text-align:center; @grid_cell_style(blk[6])">@puzz_format_num(blk[6])</td>
+                                                <td @onclick="()=>grid_cell_clicked(blk[7])" style="border:.1rem solid black; text-align:center; @grid_cell_style(blk[7])">@puzz_format_num(blk[7])</td>
+                                                <td @onclick="()=>grid_cell_clicked(blk[8])" style="border:.1rem solid black; text-align:center; @grid_cell_style(blk[8])">@puzz_format_num(blk[8])</td>
+                                            </tr>
+                                        </tbody>
+
+                                    </table>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!--Controls....-->
+
+            <br/>
+
+            <div class="btn-toolbar" role="toolbar">
+                <div class="btn-group" role="group" style="font-size:xx-large;">
+                    <button @onclick=undo_clicked type="button" style="font-size:large;" class="btn btn-danger">Undo</button>
+                    <button @onclick="()=>num_clicked(0)" type="button" style="font-size:large;" class="btn btn-danger">Erase</button>
+                    <button @onclick="()=>num_clicked(1)" type="button" style="font-size:x-large;" class="btn btn-primary">1</button>
+                    <button @onclick="()=>num_clicked(2)" type="button" style="font-size:x-large;" class="btn btn-primary">2</button>
+                    <button @onclick="()=>num_clicked(3)" type="button" style="font-size:x-large;" class="btn btn-primary">3</button>
+                    <button @onclick="()=>num_clicked(4)" type="button" style="font-size:x-large;" class="btn btn-primary">4</button>
+                    <button @onclick="()=>num_clicked(5)" type="button" style="font-size:x-large;" class="btn btn-primary">5</button>
+                    <button @onclick="()=>num_clicked(6)" type="button" style="font-size:x-large;" class="btn btn-primary">6</button>
+                    <button @onclick="()=>num_clicked(7)" type="button" style="font-size:x-large;" class="btn btn-primary">7</button>
+                    <button @onclick="()=>num_clicked(8)" type="button" style="font-size:x-large;" class="btn btn-primary">8</button>
+                    <button @onclick="()=>num_clicked(9)" type="button" style="font-size:x-large;" class="btn btn-primary">9</button>
+                </div>
+                <div class="btn-group mr-2" role="group" style="padding-left:2rem" aria-label="Second group">
+
+
+
+
+                    <button @onclick=note_clicked type="button" style="font-size:large;" class="btn btn-secondary">Note</button>
+                    <button @onclick=hint_clicked type="button" style="font-size:large;" class="btn btn-success">Hint</button>
+
+                </div>
+            </div>
+
+
+        }
+        else
+        {
+            <!--NO Puzzle loaded yet...-->
+            <h6 class="card-title">No Puzzle</h6>
+            <p class="card-text">@_msg</p>
+        }
+
+    </div>
+</div>
+
+
+
+
+@code {
+
+    [Parameter]
+    public SudokuPuzzle? Puzzle { get; set; } = null;
+
+    int[] _fixed_idx;
+    int[] _sol;
+    int _selected_number = -1;
+
+    string _msg = "No puzzle loaded. Load puzzle.";
+
+
+    string grid_cell_style(int idx)
+    {
+        if (_fixed_idx.Contains(idx))
+        {
+            return "color:black;";
+        }
+        return "";
+    }
+
+    string puzz_format_num(int idx)
+    {
+        return _fixed_idx.Contains(idx) ? Puzzle![idx].ToString() : _sol[idx].ToString();
+    }
+
+    void num_clicked(int num)
+    {
+        // '0' == erase
+        // 1..9 == nums
+
+        if (_selected_number == num)
+        {
+            _selected_number = -1;
+
+            _msg = num == 0 ? "eraser unselected" : $"'{num}' is unselected.";
+            return;
+        }
+
+
+        _selected_number = num;
+        _msg = num == 0 ? "eraser selected" : $"'{num}' is selected.";
+    }
+    void undo_clicked()
+    {
+        _msg = "Undo is not yet supported!";
+    }
+    void note_clicked()
+    {
+        _msg = "Note is not yet supported!";
+    }
+    void hint_clicked()
+    {
+        _msg = "Hint is not yet supported!";
+    }
+    void grid_cell_clicked(int idx)
+    {
+        int n = idx;
+
+
+        if (_selected_number == -1)
+        {
+            _msg = "Nothing is selected.";
+            return;
+        }
+
+        if(_fixed_idx.Contains(idx))
+        {
+            _msg = "Can't change fixed cell.";
+            return;
+        }
+
+
+        _msg = $"'{_sol[idx]}' changed to '{_selected_number}'";
+        _sol[idx] = _selected_number;
+        this.StateHasChanged();
+
+        if(Puzzle!.CheckIfSolved(_sol))
+        {
+            _msg = $"Solved!! Pick another puzzle...!";
+        }
+    }
+
+    public void LoadPuzzle(SudokuPuzzle puzz)
+    {
+        Puzzle = puzz;
+
+        _sol = Puzzle.PuzzleToIntArray().ToArray();
+
+        _fixed_idx = Puzzle.GetPuzzleFixedCells().ToArray();
+
+        _msg = $"Solution is '{Puzzle.Solution.ToString()}'";
+        this.StateHasChanged();
+    }
+}

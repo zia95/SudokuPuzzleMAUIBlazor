@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="wwwroot\qqwing\**" />
+    <Content Remove="wwwroot\qqwing\**" />
+    <EmbeddedResource Remove="wwwroot\qqwing\**" />
+    <None Remove="wwwroot\qqwing\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SudokuRLib\SudokuRLib.csproj" />
+  </ItemGroup>
+
+</Project>
